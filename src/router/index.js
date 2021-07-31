@@ -1,6 +1,22 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
+  {
+    path: '/recommend',
+    component: () => import('@/views/recommend')
+  },
+  {
+    path: '/singer',
+    component: () => import('@/views/singer')
+  },
+  {
+    path: '/top-list',
+    component: () => import('@/views/top-list')
+  },
+  {
+    path: '/search',
+    component: () => import('@/views/search')
+  }
 ]
 
 const router = createRouter({
