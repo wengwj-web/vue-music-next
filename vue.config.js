@@ -1,3 +1,5 @@
+const registerRouter = require('./backend/router')
+
 module.exports = {
   css: {
     loaderOptions: {
@@ -11,5 +13,10 @@ module.exports = {
     }
   },
   productionSourceMap: false,
-  publicPath: process.env.NODE_ENV === 'production' ? '/music-next/' : '/'
+  publicPath: process.env.NODE_ENV === 'production' ? '/music-next/' : '/',
+  devServer: {
+    before(app) {
+      registerRouter(app)
+    }
+  },
 }
