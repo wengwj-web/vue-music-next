@@ -40,7 +40,7 @@ export default {
       }
     }
   },
-  // emits: ['select'],
+  emits: ['select'],
   setup(props, { emit }) {
     const { groupRef, onScroll, fixedTitle, fixedStyle, currentIndex } = useFixed(props)
     const { shortcutList, scrollRef, onShortcutTouchStart, onShortcutTouchMove } = useShortcut(props, groupRef)

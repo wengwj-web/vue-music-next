@@ -1,12 +1,31 @@
 <template>
-  <div class="singer" >
-    <index-list :data="singers" v-loading="!singers.length"></index-list>
+  <div class="singer">
+    <index-list
+      :data="singers"
+      v-loading="!singers.length"
+      @select="selectSinger"
+    >
+    </index-list>
+    <router-view v-slot="{Component}">
+      <transition
+        appear
+        name="slide"
+      >
+        <component
+          :is="Component"
+          :singer="selectedSinger"
+        />
+      </transition>
+    </router-view>
   </div>
 </template>
 
 <script>
 import { getSingerList } from '@/service/singer'
 import IndexList from '@/components/base/index-list/index-list'
+import storage from 'good-storage'
+import { SINGER_KEY } from '@/assets/js/constant.js'
+
 export default {
   name: 'singer',
   components: {
@@ -14,13 +33,26 @@ export default {
   },
   data() {
     return {
-      singers: []
+      singers: [],
+      selectedSinger: null
     }
   },
   async created() {
     const result = await getSingerList()
     this.singers = result.singers
     console.log(result)
+  },
+  methods: {
+    selectSinger(singer) {
+      this.selectedSinger = singer
+      this.cacheSinger(singer)
+      this.$router.push({
+        path: `/singer/${singer.mid}`
+      })
+    },
+    cacheSinger(singer) {
+      storage.session.set(SINGER_KEY, singer)
+    }
   }
 }
 </script>
