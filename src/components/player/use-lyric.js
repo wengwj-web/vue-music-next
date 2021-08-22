@@ -25,6 +25,7 @@ export default function useLyric({ songReady, currentTime }) {
     playingLyric.value = ''
 
     const lyric = await getLyric(newSong)
+    console.log(lyric)
     store.commit('addSongLyric', {
       song: newSong,
       lyric

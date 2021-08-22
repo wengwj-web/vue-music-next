@@ -8,20 +8,14 @@ export default function useMode() {
 
   const modeIcon = computed(() => {
     const playModeVal = playMode.value
-    return playModeVal === PLAY_MODE.sequence
-      ? 'icon-sequence'
-      : playModeVal === PLAY_MODE.random
-        ? 'icon-random'
-        : 'icon-loop'
+    return playModeVal === PLAY_MODE.sequence ? 'icon-sequence'
+      : playModeVal === PLAY_MODE.random ? 'icon-random' : 'icon-loop'
   })
 
   const modeText = computed(() => {
     const playModeVal = playMode.value
-    return playModeVal === PLAY_MODE.sequence
-      ? '顺序播放'
-      : playModeVal === PLAY_MODE.random
-        ? '随机播放'
-        : '单曲循环'
+    return playModeVal === PLAY_MODE.sequence ? '顺序播放'
+      : playModeVal === PLAY_MODE.random ? '随机播放' : '单曲循环'
   })
 
   function changeMode() {

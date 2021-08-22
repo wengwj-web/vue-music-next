@@ -48,11 +48,11 @@ export default function useMiddleInteractive() {
     }
 
     middleLStyle.value = {
-      opacity: 1 - touch.percent
+      opacity: 1 - touch.percent,
     }
 
     middleRStyle.value = {
-      transform: `translate3d(${offsetWidth}px, 0, 0)`
+      transform: `translate3d(${offsetWidth}px, 0, 0)`,
     }
   }
 
