@@ -7,7 +7,13 @@ const routes = [
   },
   {
     path: '/recommend',
-    component: () => import('@/views/recommend')
+    component: () => import('@/views/recommend'),
+    children: [
+      {
+        path: ':id',
+        component: () => import('@/views/album')
+      }
+    ]
   },
   {
     path: '/singer',
@@ -21,7 +27,13 @@ const routes = [
   },
   {
     path: '/top-list',
-    component: () => import('@/views/top-list')
+    component: () => import('@/views/top-list'),
+    children: [
+      {
+        path: ':id',
+        component: () => import('@/views/top-detail'/* webpackChunkName: "top-detail" */)
+      }
+    ]
   },
   {
     path: '/search',
