@@ -1,48 +1,21 @@
 <template>
   <div class="music-list">
-    <div
-      class="back"
-      @click="goBack"
-    >
+    <div class="back" @click="goBack">
       <i class="icon-back"></i>
     </div>
     <h1 class="title">{{ title }}</h1>
-    <div
-      class="bg-image"
-      :style="bgImageStyle"
-      ref="bgImage"
-    >
-      <div
-        class="play-btn-wrapper"
-        :style="playBtnStyle"
-      >
-        <div
-          v-show="songs.length > 0"
-          class="play-btn"
-          @click="random"
-        >
+    <div class="bg-image" :style="bgImageStyle" ref="bgImage">
+      <div class="play-btn-wrapper" :style="playBtnStyle">
+        <div v-show="songs.length > 0" class="play-btn" @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
       </div>
-      <div
-        class="filter"
-        :style="filterStyle"
-      ></div>
+      <div class="filter" :style="filterStyle"></div>
     </div>
-    <scroll
-      class="list"
-      :style="scrollStyle"
-      v-loading="loading"
-      v-no-result:[noResultText]="noResult"
-      :probe-type="3"
-      @scroll="onScroll"
-    >
+    <scroll class="list" :style="scrollStyle" v-loading="loading" v-no-result:[noResultText]="noResult" :probe-type="3" @scroll="onScroll">
       <div class="song-list-wrapper">
-        <song-list
-          :songs="songs"
-          @select="selectItem"
-        ></song-list>
+        <song-list :songs="songs" @select="selectItem" :rank="rank"></song-list>
       </div>
     </scroll>
   </div>
