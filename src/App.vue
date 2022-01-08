@@ -1,20 +1,33 @@
 <template>
   <m-header></m-header>
   <tab></tab>
-  <router-view :style="viewStyle" />
-  <player />
+  <router-view :style="viewStyle" v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
+  <!-- router命名视图 防止全部都有动画 -->
+  <router-view :style="viewStyle" name="user" v-slot="{ Component }">
+    <transition appear name="slide">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </transition>
+  </router-view>
+  <player></player>
 </template>
 
 <script>
 import Header from '@/components/header/header'
-import Player from '@/components/player/player'
 import Tab from '@/components/tab/tab'
+import Player from '@/components/player/player'
 import { mapState } from 'vuex'
+
 export default {
   components: {
+    Player,
     MHeader: Header,
-    Tab,
-    Player
+    Tab
   },
   computed: {
     viewStyle() {

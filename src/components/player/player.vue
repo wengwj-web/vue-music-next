@@ -78,22 +78,23 @@ import { useStore } from 'vuex'
 import { computed, watch, ref, nextTick } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
-import ProgressBar from './progress-bar'
-import { formatTime } from '@/assets/js/util'
-import { PLAY_MODE } from '@/assets/js/constant'
-import useAnimation from './use-animation'
-import Scroll from '@/components/base/scroll/scroll'
-import MiniPlayer from './mini-player'
 import useCd from './use-cd'
 import useLyric from './use-lyric'
 import useMiddleInteractive from './use-middle-interactive'
+import useAnimation from './use-animation'
+import usePlayHistory from './use-play-history'
+import ProgressBar from './progress-bar'
+import Scroll from '@/components/base/scroll/scroll'
+import MiniPlayer from './mini-player'
+import { formatTime } from '@/assets/js/util'
+import { PLAY_MODE } from '@/assets/js/constant'
 
 export default {
   name: 'player',
   components: {
+    MiniPlayer,
     ProgressBar,
-    Scroll,
-    MiniPlayer
+    Scroll
   },
   setup() {
     // data
@@ -101,39 +102,50 @@ export default {
     const barRef = ref(null)
     const songReady = ref(false)
     const currentTime = ref(0)
-    let progressChange = false
+    let progressChanging = false
+
     // vuex
     const store = useStore()
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
     const currentIndex = computed(() => store.state.currentIndex)
+    const playMode = computed(() => store.state.playMode)
+
+    // hooks
+    const { modeIcon, changeMode } = useMode()
+    const { getFavoriteIcon, toggleFavorite } = useFavorite()
+    const { cdCls, cdRef, cdImageRef } = useCd()
+    const { currentLyric, currentLineNum, pureMusicLyric, playingLyric, lyricScrollRef, lyricListRef, playLyric, stopLyric } = useLyric({
+      songReady,
+      currentTime
+    })
+    const { currentShow, middleLStyle, middleRStyle, onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd } = useMiddleInteractive()
+    const { cdWrapperRef, enter, afterEnter, leave, afterLeave } = useAnimation()
+    const { savePlay } = usePlayHistory()
+
+    // computed
     const playlist = computed(() => store.state.playlist)
+
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
     })
-    const disableCls = computed(() => {
-      return songReady.value ? '' : 'disable'
-    })
+
     const progress = computed(() => {
       return currentTime.value / currentSong.value.duration
     })
-    const playMode = computed(() => store.state.playMode)
 
-    // hook
-    const { changeMode, modeIcon } = useMode()
-    const { getFavoriteIcon, toggleFavorite } = useFavorite()
-    const { cdCls, cdRef, cdImageRef } = useCd()
-    const { currentLyric, currentLineNum, pureMusicLyric, playingLyric, lyricScrollRef, lyricListRef, playLyric, stopLyric } = useLyric({ songReady, currentTime })
-    const { currentShow, middleLStyle, middleRStyle, onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd } = useMiddleInteractive()
-    const { cdWrapperRef, enter, afterEnter, leave, afterLeave } = useAnimation()
+    const disableCls = computed(() => {
+      return songReady.value ? '' : 'disable'
+    })
 
+    // watch
     watch(currentSong, (newSong) => {
       if (!newSong.id || !newSong.url) {
         return
       }
+      currentTime.value = 0
       songReady.value = false
-      updateTime.value = 0
       const audioEl = audioRef.value
       audioEl.src = newSong.url
       audioEl.play()
@@ -152,7 +164,6 @@ export default {
         audioEl.pause()
         stopLyric()
       }
-      newPlaying ? audioEl.play() : audioEl.pause()
     })
 
     watch(fullScreen, async (newFullScreen) => {
@@ -162,6 +173,7 @@ export default {
       }
     })
 
+    // methods
     function goBack() {
       store.commit('setFullScreen', false)
     }
@@ -179,9 +191,10 @@ export default {
 
     function prev() {
       const list = playlist.value
-      if (!list.length || !songReady.value) {
+      if (!songReady.value || !list.length) {
         return
       }
+
       if (list.length === 1) {
         loop()
       } else {
@@ -195,9 +208,10 @@ export default {
 
     function next() {
       const list = playlist.value
-      if (!list.length || !songReady.value) {
+      if (!songReady.value || !list.length) {
         return
       }
+
       if (list.length === 1) {
         loop()
       } else {
@@ -222,6 +236,7 @@ export default {
       }
       songReady.value = true
       playLyric()
+      savePlay(currentSong.value)
     }
 
     function error() {
@@ -229,20 +244,20 @@ export default {
     }
 
     function updateTime(e) {
-      if (!progressChange) {
+      if (!progressChanging) {
         currentTime.value = e.target.currentTime
       }
     }
 
     function onProgressChanging(progress) {
-      progressChange = true
+      progressChanging = true
       currentTime.value = currentSong.value.duration * progress
       playLyric()
       stopLyric()
     }
 
     function onProgressChanged(progress) {
-      progressChange = false
+      progressChanging = false
       audioRef.value.currentTime = currentTime.value = currentSong.value.duration * progress
       if (!playing.value) {
         store.commit('setPlayingState', true)
@@ -260,43 +275,57 @@ export default {
     }
 
     return {
-      playIcon,
       audioRef,
+      barRef,
       fullScreen,
       currentTime,
       currentSong,
+      playlist,
+      playIcon,
+      disableCls,
+      progress,
       goBack,
       togglePlay,
       pause,
       prev,
       next,
       ready,
-      disableCls,
-      progress,
       error,
-      changeMode,
-      playlist,
-      // mode
-      modeIcon,
-      getFavoriteIcon,
-      toggleFavorite,
-      formatTime,
       updateTime,
+      formatTime,
       onProgressChanging,
       onProgressChanged,
       end,
-      cdCls, cdRef, cdImageRef,
+      // mode
+      modeIcon,
+      changeMode,
+      // favorite
+      getFavoriteIcon,
+      toggleFavorite,
+      // cd
+      cdCls,
+      cdRef,
+      cdImageRef,
+      // lyric
       currentLyric,
       currentLineNum,
       pureMusicLyric,
       playingLyric,
       lyricScrollRef,
       lyricListRef,
-      playLyric,
-      stopLyric,
-      currentShow, middleLStyle, middleRStyle, onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd,
-      barRef,
-      cdWrapperRef, enter, afterEnter, leave, afterLeave
+      // middle-interactive
+      currentShow,
+      middleLStyle,
+      middleRStyle,
+      onMiddleTouchStart,
+      onMiddleTouchMove,
+      onMiddleTouchEnd,
+      // animation
+      cdWrapperRef,
+      enter,
+      afterEnter,
+      leave,
+      afterLeave
     }
   }
 }

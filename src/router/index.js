@@ -44,6 +44,12 @@ const routes = [
         component: () => import('@/views/singer-detail'/* webpackChunkName: "top-detail" */)
       }
     ]
+  },
+  {
+    path: '/user',
+    components: {
+      user: () => import('@/views/user-center')
+    }
   }
 ]
 
